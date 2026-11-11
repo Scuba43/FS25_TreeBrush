@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="utf-8" standalone="no"?>
+<modDesc descVersion="114">
+    <author>VibeCode</author>
+    <version>1.0.0.0</version>
+
+    <title>
+        <de>Baum-Brush</de>
+        <en>Tree Brush</en>
+    </title>
+
+    <description>
+        <de><![CDATA[Baum-Brush fuer den Bau-Modus: Halte die Brush-Taste gedrueckt und entferne mit einem einstellbaren Radius grosse Mengen an Baeumen und Stuempfen auf einmal - ohne single Kettensaege-Einsatz.
+
+Bedienung:
+- T: Baum-Brush an/aus (im Bau-Modus oder zu Fuss)
+- Mittlere Maustaste: Brush anwenden (halten und ueber den Wald ziehen)
+- Bild auf / Bild ab: Radius vergroessern / verkleinern
+- Konsolenbefehl: treeBrushRadius <Meter>
+
+Der Brush entfernt Wildbaeume der Karte sowie Stuempfe. Im Multiplayer wird das Entfernen serverseitig ausgefuehrt.]]></de>
+        <en><![CDATA[Tree brush for build mode: hold the brush button and remove large numbers of trees and stumps at once with an adjustable radius - no chainsaw needed.
+
+Usage:
+- T: toggle tree brush on/off (in build mode or on foot)
+- Middle mouse button: apply brush (hold and sweep over the forest)
+- Page up / Page down: increase / decrease radius
+- Console command: treeBrushRadius <meters>
+
+The brush removes wild map trees and stumps. In multiplayer, removal is executed on the server.]]></en>
+    </description>
+
+    <iconFilename>icon.dds</iconFilename>
+    <multiplayer supported="true"/>
+
+    <extraSourceFiles>
+        <sourceFile filename="TreeBrush.lua"/>
+    </extraSourceFiles>
+
+    <actions>
+        <action name="TREEBRUSH_TOGGLE"/>
+        <action name="TREEBRUSH_APPLY"/>
+        <action name="TREEBRUSH_RADIUS_UP"/>
+        <action name="TREEBRUSH_RADIUS_DOWN"/>
+    </actions>
+
+    <inputBinding>
+        <actionBinding action="TREEBRUSH_TOGGLE">
+            <binding device="KB_MOUSE" input="KEY_t"/>
+        </actionBinding>
+        <actionBinding action="TREEBRUSH_APPLY">
+            <binding device="KB_MOUSE" input="MOUSE_BUTTON_MIDDLE"/>
+        </actionBinding>
+        <actionBinding action="TREEBRUSH_RADIUS_UP">
+            <binding device="KB_MOUSE" input="KEY_pageup"/>
+        </actionBinding>
+        <actionBinding action="TREEBRUSH_RADIUS_DOWN">
+            <binding device="KB_MOUSE" input="KEY_pagedown"/>
+        </actionBinding>
+    </inputBinding>
+
+    <l10n>
+        <text name="input_TREEBRUSH_TOGGLE">
+            <de>Baum-Brush an/aus</de>
+            <en>Tree brush on/off</en>
+        </text>
+        <text name="input_TREEBRUSH_APPLY">
+            <de>Baum-Brush anwenden (halten)</de>
+            <en>Apply tree brush (hold)</en>
+        </text>
+        <text name="input_TREEBRUSH_RADIUS_UP">
+            <de>Baum-Brush: Radius vergroessern</de>
+            <en>Tree brush: increase radius</en>
+        </text>
+        <text name="input_TREEBRUSH_RADIUS_DOWN">
+            <de>Baum-Brush: Radius verkleinern</de>
+            <en>Tree brush: decrease radius</en>
+        </text>
+        <text name="treeBrush_enabled">
+            <de>Baum-Brush AKTIV - Radius: %.0f m (Mittlere Maustaste halten)</de>
+            <en>Tree brush ACTIVE - radius: %.0f m (hold middle mouse button)</en>
+        </text>
+        <text name="treeBrush_disabled">
+            <de>Baum-Brush AUS</de>
+            <en>Tree brush OFF</en>
+        </text>
+        <text name="treeBrush_removed">
+            <de>Baum-Brush: %d Objekte entfernt</de>
+            <en>Tree brush: %d objects removed</en>
+        </text>
+        <text name="treeBrush_noPermission">
+            <de>Baum-Brush: Keine Berechtigung zum Entfernen von Baeumen</de>
+            <en>Tree brush: No permission to remove trees</en>
+        </text>
+        <text name="treeBrush_radiusSet">
+            <de>Baum-Brush Radius: %.0f m</de>
+            <en>Tree brush radius: %.0f m</en>
+        </text>
+    </l10n>
+</modDesc>
