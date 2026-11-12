@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8" standalone="no"?>
 <modDesc descVersion="114">
     <author>VibeCode</author>
-    <version>1.0.0.0</version>
+    <version>1.0.1.0</version>
 
     <title>
         <de>Baum-Brush</de>
@@ -37,24 +37,24 @@ The brush removes wild map trees and stumps. In multiplayer, removal is executed
     </extraSourceFiles>
 
     <actions>
-        <action name="TREEBRUSH_TOGGLE"/>
-        <action name="TREEBRUSH_APPLY"/>
-        <action name="TREEBRUSH_RADIUS_UP"/>
-        <action name="TREEBRUSH_RADIUS_DOWN"/>
+        <action name="TREEBRUSH_TOGGLE" category="ONFOOT" axisType="HALF"/>
+        <action name="TREEBRUSH_APPLY" category="ONFOOT" axisType="HALF"/>
+        <action name="TREEBRUSH_RADIUS_UP" category="ONFOOT" axisType="HALF"/>
+        <action name="TREEBRUSH_RADIUS_DOWN" category="ONFOOT" axisType="HALF"/>
     </actions>
 
     <inputBinding>
         <actionBinding action="TREEBRUSH_TOGGLE">
-            <binding device="KB_MOUSE" input="KEY_t"/>
+            <binding device="KB_MOUSE_DEFAULT" input="KEY_t"/>
         </actionBinding>
         <actionBinding action="TREEBRUSH_APPLY">
-            <binding device="KB_MOUSE" input="MOUSE_BUTTON_MIDDLE"/>
+            <binding device="KB_MOUSE_DEFAULT" input="MOUSE_BUTTON_MIDDLE"/>
         </actionBinding>
         <actionBinding action="TREEBRUSH_RADIUS_UP">
-            <binding device="KB_MOUSE" input="KEY_pageup"/>
+            <binding device="KB_MOUSE_DEFAULT" input="KEY_pageup"/>
         </actionBinding>
         <actionBinding action="TREEBRUSH_RADIUS_DOWN">
-            <binding device="KB_MOUSE" input="KEY_pagedown"/>
+            <binding device="KB_MOUSE_DEFAULT" input="KEY_pagedown"/>
         </actionBinding>
     </inputBinding>
 

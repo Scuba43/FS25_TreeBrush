@@ -19,51 +19,70 @@ TreeBrush.radius = 8
 TreeBrush.center = nil
 TreeBrush.candidates = {}
 TreeBrush.actionEventIds = {}
+TreeBrush.registered = false
+TreeBrush.registerTries = 0
+TreeBrush.maxRegisterTries = 600
 
 source(g_currentModDirectory .. 'events/TreeBrushDeleteEvent.lua')
 
 addModEventListener(TreeBrush)
 
 function TreeBrush:loadMap(name)
-    self:registerActionEvents()
-
     if g_server ~= nil then
         addConsoleCommand('treeBrushRadius', 'Set tree brush radius in meters (2-30)', 'consoleSetRadius', TreeBrush)
     end
 end
 
 function TreeBrush:deleteMap()
-    for _, actionEventId in pairs(TreeBrush.actionEventIds) do
-        g_inputBinding:removeActionEvent(actionEventId)
+    if TreeBrush.registered then
+        for _, actionEventId in pairs(TreeBrush.actionEventIds) do
+            g_inputBinding:removeActionEvent(actionEventId)
+        end
     end
     TreeBrush.actionEventIds = {}
+    TreeBrush.registered = false
     TreeBrush.enabled = false
     TreeBrush.applyState = 0
 end
 
 function TreeBrush:registerActionEvents()
-    local _, toggleId = g_inputBinding:registerActionEvent('TREEBRUSH_TOGGLE', TreeBrush, TreeBrush.actionToggle, true, false, false, true)
-    TreeBrush.actionEventIds.toggle = toggleId
-    g_inputBinding:setActionEventTextPriority(toggleId, GS_PRIO_NORMAL)
-    g_inputBinding:setActionEventText(toggleId, g_i18n:getText('input_TREEBRUSH_TOGGLE'))
-    g_inputBinding:setActionEventTextVisibility(toggleId, true)
+    local ids = {}
 
-    local _, applyId = g_inputBinding:registerActionEvent('TREEBRUSH_APPLY', TreeBrush, TreeBrush.actionApply, true, true, false, true)
-    TreeBrush.actionEventIds.apply = applyId
-    g_inputBinding:setActionEventTextPriority(applyId, GS_PRIO_HIGH)
-    g_inputBinding:setActionEventText(applyId, g_i18n:getText('input_TREEBRUSH_APPLY'))
-    g_inputBinding:setActionEventTextVisibility(applyId, true)
-    g_inputBinding:setActionEventActive(applyId, false)
+    local successToggle, toggleId = g_inputBinding:registerActionEvent('TREEBRUSH_TOGGLE', TreeBrush, TreeBrush.actionToggle, true, false, false, true)
+    ids.toggle = successToggle and toggleId or nil
 
-    local _, radiusUpId = g_inputBinding:registerActionEvent('TREEBRUSH_RADIUS_UP', TreeBrush, TreeBrush.actionRadiusUp, true, false, false, true)
-    TreeBrush.actionEventIds.radiusUp = radiusUpId
-    g_inputBinding:setActionEventText(radiusUpId, g_i18n:getText('input_TREEBRUSH_RADIUS_UP'))
-    g_inputBinding:setActionEventActive(radiusUpId, false)
+    local successApply, applyId = g_inputBinding:registerActionEvent('TREEBRUSH_APPLY', TreeBrush, TreeBrush.actionApply, true, true, false, true)
+    ids.apply = successApply and applyId or nil
 
-    local _, radiusDownId = g_inputBinding:registerActionEvent('TREEBRUSH_RADIUS_DOWN', TreeBrush, TreeBrush.actionRadiusDown, true, false, false, true)
-    TreeBrush.actionEventIds.radiusDown = radiusDownId
-    g_inputBinding:setActionEventText(radiusDownId, g_i18n:getText('input_TREEBRUSH_RADIUS_DOWN'))
-    g_inputBinding:setActionEventActive(radiusDownId, false)
+    local successRadiusUp, radiusUpId = g_inputBinding:registerActionEvent('TREEBRUSH_RADIUS_UP', TreeBrush, TreeBrush.actionRadiusUp, true, false, false, true)
+    ids.radiusUp = successRadiusUp and radiusUpId or nil
+
+    local successRadiusDown, radiusDownId = g_inputBinding:registerActionEvent('TREEBRUSH_RADIUS_DOWN', TreeBrush, TreeBrush.actionRadiusDown, true, false, false, true)
+    ids.radiusDown = successRadiusDown and radiusDownId or nil
+
+    local allRegistered = successToggle and successApply and successRadiusUp and successRadiusDown
+    if not allRegistered then
+        print(string.format('[TreeBrush] Action event registration incomplete (toggle=%s, apply=%s, radiusUp=%s, radiusDown=%s)', tostring(successToggle), tostring(successApply), tostring(successRadiusUp), tostring(successRadiusDown)))
+        return false
+    end
+
+    TreeBrush.actionEventIds = ids
+
+    g_inputBinding:setActionEventTextPriority(ids.toggle, GS_PRIO_NORMAL)
+    g_inputBinding:setActionEventText(ids.toggle, g_i18n:getText('input_TREEBRUSH_TOGGLE'))
+    g_inputBinding:setActionEventTextVisibility(ids.toggle, true)
+
+    g_inputBinding:setActionEventTextPriority(ids.apply, GS_PRIO_HIGH)
+    g_inputBinding:setActionEventText(ids.apply, g_i18n:getText('input_TREEBRUSH_APPLY'))
+    g_inputBinding:setActionEventTextVisibility(ids.apply, true)
+
+    g_inputBinding:setActionEventText(ids.radiusUp, g_i18n:getText('input_TREEBRUSH_RADIUS_UP'))
+    g_inputBinding:setActionEventText(ids.radiusDown, g_i18n:getText('input_TREEBRUSH_RADIUS_DOWN'))
+
+    TreeBrush.registered = true
+    TreeBrush:updateActionEventStates()
+    print('[TreeBrush] Action events registered')
+    return true
 end
 
 function TreeBrush:updateActionEventStates()
@@ -141,6 +160,16 @@ function TreeBrush.getMousePosition()
 end
 
 function TreeBrush:update(dt)
+    if not TreeBrush.registered then
+        if g_currentMission ~= nil and g_localPlayer ~= nil and TreeBrush.registerTries < TreeBrush.maxRegisterTries then
+            TreeBrush.registerTries = TreeBrush.registerTries + 1
+            TreeBrush:registerActionEvents()
+        end
+        if not TreeBrush.registered then
+            return
+        end
+    end
+
     if not TreeBrush.enabled then
         TreeBrush.center = nil
         return
