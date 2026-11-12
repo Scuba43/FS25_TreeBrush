@@ -27,6 +27,20 @@ source(g_currentModDirectory .. 'events/TreeBrushDeleteEvent.lua')
 
 addModEventListener(TreeBrush)
 
+if PlayerInputComponent ~= nil and TreeBrush.hooksInstalled ~= true then
+    TreeBrush.hooksInstalled = true
+
+    PlayerInputComponent.registerActionEvents = Utils.appendedFunction(PlayerInputComponent.registerActionEvents,
+        function(...)
+            return TreeBrush.onRegisterActionEvents(...)
+        end)
+
+    PlayerInputComponent.unregisterActionEvents = Utils.appendedFunction(PlayerInputComponent.unregisterActionEvents,
+        function(...)
+            return TreeBrush.onUnregisterActionEvents(...)
+        end)
+end
+
 function TreeBrush:loadMap(name)
     if g_server ~= nil then
         addConsoleCommand('treeBrushRadius', 'Set tree brush radius in meters (2-30)', 'consoleSetRadius', TreeBrush)
@@ -34,31 +48,54 @@ function TreeBrush:loadMap(name)
 end
 
 function TreeBrush:deleteMap()
-    if TreeBrush.registered then
-        for _, actionEventId in pairs(TreeBrush.actionEventIds) do
-            g_inputBinding:removeActionEvent(actionEventId)
-        end
-    end
-    TreeBrush.actionEventIds = {}
-    TreeBrush.registered = false
+    TreeBrush:unregisterActionEvents()
     TreeBrush.enabled = false
     TreeBrush.applyState = 0
 end
 
+function TreeBrush.onRegisterActionEvents(inputComponent)
+    if inputComponent.player ~= nil and inputComponent.player.isOwner then
+        TreeBrush:registerActionEvents()
+    end
+end
+
+function TreeBrush.onUnregisterActionEvents(inputComponent)
+    if inputComponent.player ~= nil and inputComponent.player.isOwner then
+        TreeBrush:unregisterActionEvents()
+    end
+end
+
+function TreeBrush:unregisterActionEvents()
+    if not TreeBrush.registered then
+        return
+    end
+    g_inputBinding:beginActionEventsModification(PlayerInputComponent.INPUT_CONTEXT_NAME)
+    g_inputBinding:removeActionEventsByTarget(TreeBrush)
+    g_inputBinding:endActionEventsModification()
+    TreeBrush.actionEventIds = {}
+    TreeBrush.registered = false
+end
+
 function TreeBrush:registerActionEvents()
+    TreeBrush:unregisterActionEvents()
+
     local ids = {}
 
-    local successToggle, toggleId = g_inputBinding:registerActionEvent('TREEBRUSH_TOGGLE', TreeBrush, TreeBrush.actionToggle, true, false, false, true)
+    g_inputBinding:beginActionEventsModification(PlayerInputComponent.INPUT_CONTEXT_NAME)
+
+    local successToggle, toggleId = g_inputBinding:registerActionEvent('TREEBRUSH_TOGGLE', TreeBrush, TreeBrush.actionToggle, false, true, false, true)
     ids.toggle = successToggle and toggleId or nil
 
     local successApply, applyId = g_inputBinding:registerActionEvent('TREEBRUSH_APPLY', TreeBrush, TreeBrush.actionApply, true, true, false, true)
     ids.apply = successApply and applyId or nil
 
-    local successRadiusUp, radiusUpId = g_inputBinding:registerActionEvent('TREEBRUSH_RADIUS_UP', TreeBrush, TreeBrush.actionRadiusUp, true, false, false, true)
+    local successRadiusUp, radiusUpId = g_inputBinding:registerActionEvent('TREEBRUSH_RADIUS_UP', TreeBrush, TreeBrush.actionRadiusUp, false, true, false, true)
     ids.radiusUp = successRadiusUp and radiusUpId or nil
 
-    local successRadiusDown, radiusDownId = g_inputBinding:registerActionEvent('TREEBRUSH_RADIUS_DOWN', TreeBrush, TreeBrush.actionRadiusDown, true, false, false, true)
+    local successRadiusDown, radiusDownId = g_inputBinding:registerActionEvent('TREEBRUSH_RADIUS_DOWN', TreeBrush, TreeBrush.actionRadiusDown, false, true, false, true)
     ids.radiusDown = successRadiusDown and radiusDownId or nil
+
+    g_inputBinding:endActionEventsModification()
 
     local allRegistered = successToggle and successApply and successRadiusUp and successRadiusDown
     if not allRegistered then
